@@ -1,7 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
+using Avalonia.Media;
 
 namespace AvaloniaApplication1.Views;
 
@@ -14,19 +17,20 @@ public partial class MainWindow : Window
     
     private void Element_OnPointerEntered(object? sender, PointerEventArgs e)
     {
-        var toolTip = new ToolTip() { Content = "testing tooltip" };
-        var parentControl = sender as Control;
-        ToolTip.SetTip(parentControl, toolTip);
-        ToolTip.SetIsOpen(parentControl, true);
-        if (toolTip is IPopupHostProvider popupHostProvider && popupHostProvider.PopupHost is not null)
+        var popup = new Popup
         {
-            popupHostProvider.PopupHost.ConfigurePosition(
-                parentControl,
-                PlacementMode.AnchorAndGravity,
-                e.GetPosition(parentControl),
-                PopupAnchor.TopLeft,
-                PopupGravity.BottomRight
-            );
-        }
+            Child = new ContentControl(){ Content = "Test tooltip" },
+            PlacementTarget = sender as Control,
+            Placement = PlacementMode.Pointer,
+            WindowManagerAddShadowHint = true,
+            PlacementConstraintAdjustment = PopupPositionerConstraintAdjustment.All,
+            IsLightDismissEnabled = true,
+        };
+        
+        ((ISetLogicalParent)popup).SetParent(sender as Control);
+
+        popup.Open();
+        // this is added to show that there is no corner radius and border shadow applied as per underlying OS
+        (popup.Host as PopupRoot).Background = Brushes.Gray;
     }
 }
